@@ -1,0 +1,5 @@
+import{placesFor,type Place}from'./places.ts';
+export function clueFor(destination:string,route:string[],seed:number){const list=placesFor(destination);const valid=route.map(id=>list.find(p=>p.id===id)).filter((p):p is Place=>!!p);const target=valid[Math.abs(seed)%Math.max(1,valid.length)]||list[0];const options=[target,...list.filter(p=>p.id!==target.id).slice(0,2)].sort((a,b)=>hash(a.id+seed)-hash(b.id+seed));return{target,options};}
+function hash(s:string){return[...s].reduce((n,c)=>(n*31+c.charCodeAt(0))>>>0,7);}
+export function expeditionScore(correctClue:boolean|null,respectAnswer:number|null,hasMemory:boolean,usedHint:boolean){return 30+(correctClue===null?0:correctClue?(usedHint?85:100):20)+(respectAnswer===null?0:respectAnswer===0?100:20)+(hasMemory?30:0);}
+export const respectOptions={ar:['أقول: لو سمحت، هل تسمح لي أصوّرك؟','ألتقط الصورة بسرعة قبل أن ينتبه','أفترض موافقته لأنه في مكان عام'],en:['Ask: May I take your photo, please?','Take a quick photo before he notices','Assume consent because it is a public place']};

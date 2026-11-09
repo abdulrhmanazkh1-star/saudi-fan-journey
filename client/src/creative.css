@@ -1,0 +1,294 @@
+/* ===== Creative layer: visual only, no content changes ===== */
+.app{--fx-spot:201,154,60;--fx-line:38,75,61}
+.app[data-tournament=world-cup-2034]{--fx-spot:59,166,196;--fx-line:23,56,74}
+
+/* interactive background canvas sits behind the whole app */
+.fx-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;display:block}
+.app{position:relative;z-index:1;background:transparent!important}
+.app[data-tournament]{background:transparent!important}
+
+/* glass header / strips / footer so the pattern shows through */
+header{background:rgba(250,247,240,.72)!important;-webkit-backdrop-filter:blur(14px) saturate(1.25);backdrop-filter:blur(14px) saturate(1.25)}
+.app[data-tournament=world-cup-2034] header{background:rgba(248,252,253,.72)!important}
+.tournament-strip{background:rgba(238,230,215,.6)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+footer{background:rgba(246,241,231,.7)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.app[data-tournament=world-cup-2034] footer{background:rgba(233,242,245,.72)!important}
+
+/* cards: 3D tilt that follows the mouse + soft spotlight */
+.how-card,.city-card,.tournament-option,.tournament-preview,.country-card,.culture-card,.travel-card,.adventure-invite,.result-card,.passport-card,.landmark-card,.recipe-card,.culture-story-card,.day-result-card,.quest-route-card{will-change:transform}
+.country-card,.culture-card,.travel-card{position:relative}
+.how-card:hover,.city-card:hover,.tournament-option:hover,.tournament-preview:hover,.country-card:hover,.culture-card:hover,.travel-card:hover,.adventure-invite:hover,.result-card:hover,.passport-card:hover,.landmark-card:hover,.recipe-card:hover,.culture-story-card:hover,.day-result-card:hover,.quest-route-card:hover{
+  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-5px);
+  transition:transform .14s ease-out,border-color .2s,background .2s,box-shadow .3s;
+  box-shadow:0 22px 44px -22px rgba(var(--fx-line),.45);
+}
+.how-card::after,.city-card::after,.tournament-option::after,.country-card::after,.culture-card::after,.travel-card::after,.result-card::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  opacity:var(--glow,0);transition:opacity .25s;
+  background:radial-gradient(360px circle at var(--mx,50%) var(--my,50%),rgba(var(--fx-spot),.26),transparent 62%);
+}
+
+/* magnetic buttons */
+.button,.brand-symbol{translate:var(--tx,0px) var(--ty,0px);transition:transform .2s,background .2s,translate .18s ease-out}
+.primary{position:relative;overflow:hidden}
+.primary:hover{box-shadow:0 12px 28px -12px rgba(var(--fx-spot),.9)}
+
+/* custom cursor */
+.fx-ring,.fx-dot{position:fixed;left:0;top:0;z-index:9999;pointer-events:none;opacity:0;will-change:transform}
+.fx-ring{width:40px;height:40px;border-radius:50%;border:1.5px dashed var(--fx-c,rgba(38,75,61,.85));transition:opacity .3s,border-color .25s}
+.fx-dot{width:7px;height:7px;border-radius:1px;rotate:45deg}
+@media (pointer:coarse){.fx-ring,.fx-dot{display:none}}
+
+/* gentle entrance + ambient motion (transform-free so hover tilt keeps working) */
+@keyframes fxRise{from{opacity:0;translate:0 26px}to{opacity:1;translate:0 0}}
+@keyframes fxFloat{0%,100%{translate:0 0}50%{translate:0 -10px}}
+@keyframes fxShine{to{background-position:200% center}}
+.content-section,.hero-editorial,.hero-art,.how-card,.city-card,.tournament-option,.country-card,.culture-card,.page-title{animation:fxRise .8s cubic-bezier(.2,.7,.2,1) backwards}
+.how-card:nth-child(2),.city-card:nth-child(2),.tournament-option:nth-child(2){animation-delay:.09s}
+.how-card:nth-child(3),.city-card:nth-child(3){animation-delay:.18s}
+.hero-art{animation-delay:.12s}
+.hero-art>img{animation:fxFloat 9s ease-in-out infinite}
+.heritage-hero h1 em{background:linear-gradient(90deg,#a95135,#c99a3c,#264b3d,#a95135);background-size:220% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:fxShine 7s linear infinite}
+
+::selection{background:rgba(201,154,60,.38)}
+html{scrollbar-color:#a95135 rgba(246,241,231,.6)}
+
+@media (prefers-reduced-motion:reduce){
+  .fx-ring,.fx-dot{display:none}
+  .hero-art>img,.heritage-hero h1 em{animation:none}
+}
+
+/* ===================================================================
+   PART 2 — whole-app redesign (every screen, same content)
+   =================================================================== */
+.app{--r:16px;--card-bg:rgba(255,252,246,.86);--hair:rgba(var(--fx-line),.14);--accent:#a95135;--accent2:#c99a3c;--deep:#264b3d}
+.app[data-tournament=world-cup-2034]{--accent:#087c80;--accent2:#3ba6c4;--deep:#17384a}
+
+/* scroll progress bar (CSS only) */
+.app::before{content:'';position:fixed;left:0;top:0;height:3px;width:100%;z-index:10001;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--accent),var(--accent2),var(--deep))}
+@supports (animation-timeline:scroll()){.app::before{animation:fxProg linear both;animation-timeline:scroll(root)}}
+@keyframes fxProg{to{transform:scaleX(1)}}
+
+/* header: sticky glass with animated underline links */
+header{position:sticky;top:0;z-index:50;transition:box-shadow .3s}
+.nav button{position:relative;padding:6px 0}
+.nav button::after{content:'';position:absolute;left:0;right:0;bottom:-2px;height:2px;border-radius:2px;background:var(--accent);transform:scaleX(0);transition:transform .25s}
+.nav button:hover::after{transform:scaleX(1)}
+.brand-symbol{box-shadow:0 8px 20px -8px rgba(var(--fx-line),.6);transition:transform .4s}
+.brand:hover .brand-symbol{transform:rotate(-8deg) scale(1.06)}
+
+/* buttons: rounder, gradient + shine sweep */
+.button{border-radius:999px!important;letter-spacing:.3px}
+.primary{background:linear-gradient(135deg,var(--deep),color-mix(in srgb,var(--deep) 70%,var(--accent)))!important;color:#fff!important;box-shadow:0 10px 24px -12px rgba(var(--fx-line),.8)!important}
+.primary::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);transform:translateX(-120%);transition:transform .7s}
+.primary:hover::before{transform:translateX(120%)}
+.outline{border:1.5px solid color-mix(in srgb,var(--deep) 45%,transparent)!important}
+.outline:hover{background:var(--deep);color:#fff}
+
+/* page titles + eyebrows */
+.page-title{position:relative;padding-inline-start:22px}
+.page-title::before{content:'';position:absolute;inset-inline-start:0;top:6px;bottom:6px;width:5px;border-radius:5px;background:linear-gradient(var(--accent),var(--accent2))}
+.page-title h1{font-size:clamp(32px,4vw,50px)!important;background:linear-gradient(100deg,var(--deep) 30%,var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;width:fit-content;max-width:100%}
+.section-heading h2{position:relative}
+.section-heading h2::after{content:'';display:block;width:56px;height:4px;border-radius:4px;margin-top:12px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.eyebrow{font-weight:800}
+
+/* stepper */
+.stepper{position:relative;gap:30px!important}
+.stepper button>span{width:30px!important;height:30px!important;font-weight:700;transition:transform .25s,box-shadow .25s}
+.stepper .reached>span{box-shadow:0 0 0 5px rgba(var(--fx-spot),.25)}
+.stepper button:not(:disabled):hover>span{transform:scale(1.12)}
+
+/* generic card skin: rounded, hairline, deep shadow */
+.how-card,.city-card,.tournament-option,.country-card,.culture-card,.travel-card,.adventure-invite,.result-card,.passport-card,.landmark-card,.recipe-card,.culture-story-card,.day-result-card,.quest-route-card,.destination-stadium,.transport-panel,.stadium-tab-panel,.ai-status-card,.tournament-preview{border-radius:var(--r)!important}
+.country-card,.culture-card,.travel-card,.landmark-card,.recipe-card,.culture-story-card,.destination-stadium{background:var(--card-bg)!important;border:1px solid var(--hair)!important;box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 14px 34px -26px rgba(var(--fx-line),.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.country-card{transition:transform .2s,box-shadow .25s,border-color .25s}
+.country-card .flag,.country-card img{transition:transform .3s}
+.country-card:hover .flag,.country-card:hover img{transform:scale(1.14) rotate(-3deg)}
+.country-card.selected,.selected{border-color:var(--accent)!important;box-shadow:0 0 0 2px var(--accent),0 18px 36px -20px rgba(var(--fx-spot),.9)!important}
+
+/* image cards: zoom on hover, overflow clipped */
+.landmark-card,.destination-stadium,.culture-story-card,.recipe-card{overflow:hidden}
+.landmark-card img,.destination-stadium img,.culture-story-card img,.recipe-card img,.city-card img{transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+.landmark-card:hover img,.destination-stadium:hover img,.culture-story-card:hover img,.recipe-card:hover img{transform:scale(1.07)}
+
+/* tournament options + strip previews */
+.tournament-option{background:linear-gradient(135deg,rgba(255,252,246,.95),rgba(239,230,211,.8))!important;border:1px solid var(--hair)!important}
+.app[data-tournament=world-cup-2034] .tournament-option{background:linear-gradient(135deg,rgba(246,251,253,.95),rgba(214,235,242,.8))!important}
+.huge-year{opacity:.08!important}
+.tournament-preview{background:rgba(255,252,246,.55);transition:transform .2s,box-shadow .25s}
+.trophy{border-radius:14px 4px 14px 4px!important;transition:transform .35s}
+.tournament-preview:hover .trophy{transform:rotate(-8deg) scale(1.08)}
+
+/* inputs */
+.search,input[type=search],.app input:not([type=checkbox]):not([type=radio]){transition:box-shadow .25s,border-color .25s}
+.search{border-radius:999px!important;background:var(--card-bg)!important}
+.search:focus-within{border-color:var(--accent)!important;box-shadow:0 0 0 4px rgba(var(--fx-spot),.25)}
+select{border-radius:999px;padding:8px 12px}
+
+/* tags / chips / tabs as pills */
+.tag,[class*="chip"],[class*="filter"] button,[class*="tabs"] button,[role=tab]{border-radius:999px!important;transition:background .2s,color .2s,transform .2s,box-shadow .2s}
+[class*="chip"]:hover,[class*="filter"] button:hover,[class*="tabs"] button:hover,[role=tab]:hover{transform:translateY(-2px)}
+[class*="filter"] button.active,[class*="tabs"] button.active,[role=tab][aria-selected=true]{background:var(--deep)!important;color:#fff!important;box-shadow:0 8px 18px -10px rgba(var(--fx-line),.8)}
+
+/* progress + choices in the matchday / adventure screens */
+.progress-bar{border-radius:99px;overflow:hidden;height:6px}
+.progress-bar span{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.choices button{border-radius:14px!important;transition:transform .2s,border-color .2s,background .2s,box-shadow .25s}
+.choices button:hover{transform:translateX(6px);box-shadow:0 14px 28px -18px rgba(var(--fx-line),.7)}
+[dir=rtl] .choices button:hover{transform:translateX(-6px)}
+.scene,.completion .result-card{border-radius:20px!important;box-shadow:0 30px 60px -36px rgba(var(--fx-line),.7)}
+.cultural-insight{border-radius:12px;backdrop-filter:blur(6px)}
+
+/* floating helpers (AI chat / connection) glow */
+[class*="chat-launcher"],[class*="ask-guide"],[class*="floating"]{box-shadow:0 18px 40px -16px rgba(var(--fx-line),.8)}
+
+/* footer: ornamental band */
+footer{position:relative}
+footer::before{content:'';position:absolute;left:0;right:0;top:0;height:10px;background:repeating-linear-gradient(135deg,var(--deep) 0 6px,transparent 6px 12px);opacity:.28}
+
+/* scroll reveal (progressive; falls back to visible) */
+@supports (animation-timeline:view()){
+  .landmark-card,.culture-story-card,.recipe-card,.destination-stadium,.passport-card,.quest-route-card,.day-result-card{animation:fxReveal linear both;animation-timeline:view();animation-range:entry 0% entry 38%}
+  @keyframes fxReveal{from{opacity:0;translate:0 38px;scale:.97}to{opacity:1;translate:0 0;scale:1}}
+}
+
+/* small screens: calmer */
+@media(max-width:760px){
+  .page-title{padding-inline-start:16px}
+  .stepper{gap:6px!important}
+  header{position:relative}
+}
+@media (prefers-reduced-motion:reduce){.app::before{display:none}.primary::before{display:none}}
+
+/* ===================================================================
+   PART 3 — calmer background + living photos + upgraded chat
+   =================================================================== */
+.fx-canvas{opacity:.85}
+
+/* ---------- Photos: slow drift, mouse parallax, vignette, shine ---------- */
+@keyframes fxDrift{0%{scale:1.04;rotate:0deg}50%{scale:1.13}100%{scale:1.07;rotate:0deg}}
+@keyframes fxShineSweep{from{translate:-130% 0}to{translate:130% 0}}
+.landmark-card:hover img,.destination-stadium:hover img,.culture-story-card:hover img,.recipe-card:hover img{transform:none}
+
+.stadium-photo-stage>img,.landmark-photo>img,.destination-stadium img,.culture-stadium-photo,.world-venue-image img,.world-hero>img,.world-stadium-grid img,.world-city-grid img,.city-card>img,.culture-story-card img,.recipe-card img{
+  transform:none!important;
+  animation:fxDrift 22s ease-in-out infinite alternate;
+  translate:calc(var(--px,0)*-12px) calc(var(--py,0)*-8px);
+  transition:translate .45s cubic-bezier(.2,.7,.2,1),filter .4s;
+  will-change:scale,translate;
+}
+.landmark-card:nth-child(2n) .landmark-photo>img,.world-stadium-grid>*:nth-child(2n) img,.destination-stadium:nth-child(2) img{animation-duration:27s;animation-delay:-6s}
+.landmark-card:nth-child(3n) .landmark-photo>img,.world-stadium-grid>*:nth-child(3n) img,.destination-stadium:nth-child(3) img{animation-duration:31s;animation-delay:-12s}
+
+/* images must stay inside their frames while they drift */
+.destination-stadium :has(>img),.landmark-photo,.world-venue-image,.world-hero,.world-stadium-grid :has(>img),.world-city-grid :has(>img),.culture-story-card :has(>img),.recipe-card :has(>img),.stadium-photo-stage{overflow:hidden}
+.landmark-photo,.world-venue-image{position:relative;border-radius:var(--r) var(--r) 0 0}
+
+/* soft vignette + warm light so photos feel graded, not pasted */
+.landmark-photo::after,.world-venue-image::after,.destination-stadium :has(>img)::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.0) 45%,rgba(18,32,26,.38)),radial-gradient(120% 90% at 50% 0,rgba(255,226,170,.14),transparent 60%);mix-blend-mode:normal}
+.destination-stadium :has(>img){position:relative}
+
+/* a quiet light sweep when a photo card is hovered */
+.landmark-card::before,.destination-stadium::before,.world-stadium-grid>*::before{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.22) 50%,transparent 60%);translate:-130% 0;opacity:0}
+.landmark-card:hover::before,.destination-stadium:hover::before,.world-stadium-grid>*:hover::before{opacity:1;animation:fxShineSweep .9s ease-out}
+.landmark-card,.destination-stadium,.world-stadium-grid>*{position:relative}
+
+/* the main stadium gallery: framed, with a progress bar that ticks */
+.stadium-photo-stage{border-radius:var(--r);box-shadow:0 26px 50px -30px rgba(var(--fx-line),.8)}
+.stadium-photo-thumbs button{border-radius:10px!important;overflow:hidden;transition:transform .25s,box-shadow .25s,opacity .25s}
+.stadium-photo-thumbs button:not(.active){opacity:.72}
+.stadium-photo-thumbs button:hover{transform:translateY(-4px);opacity:1}
+.stadium-photo-thumbs button.active{box-shadow:0 0 0 2px var(--accent),0 14px 24px -14px rgba(var(--fx-line),.8);opacity:1}
+.stadium-photo-prev,.stadium-photo-next,.stadium-photo-zoom{backdrop-filter:blur(8px);transition:transform .2s,background .2s}
+.stadium-photo-prev:hover,.stadium-photo-next:hover{transform:scale(1.12)}
+/* lightbox keeps the whole photo, no drifting */
+.stadium-lightbox .stadium-photo-stage>img{animation:none;scale:1;translate:0 0}
+
+/* hero art keeps its own gentle float; don't double-animate */
+.hero-art>img{translate:calc(var(--px,0)*-10px) calc(var(--py,0)*-8px);transition:translate .45s}
+
+@media (prefers-reduced-motion:reduce){
+  .stadium-photo-stage>img,.landmark-photo>img,.destination-stadium img,.culture-stadium-photo,.world-venue-image img,.world-hero>img,.world-stadium-grid img,.world-city-grid img,.city-card>img,.culture-story-card img,.recipe-card img{animation:none;translate:0 0}
+}
+
+/* ---------- Tourist AI chat ---------- */
+.chat-launcher{background:linear-gradient(135deg,var(--deep),color-mix(in srgb,var(--deep) 65%,var(--accent)))!important;box-shadow:0 18px 40px -16px rgba(var(--fx-line),.85)!important}
+.chat-launcher i{box-shadow:0 0 0 0 rgba(219,196,135,.7);animation:fxPing 2.4s infinite}
+@keyframes fxPing{70%{box-shadow:0 0 0 9px rgba(219,196,135,0)}100%{box-shadow:0 0 0 0 rgba(219,196,135,0)}}
+.chat-panel{z-index:10000!important;width:min(440px,calc(100vw - 24px))!important;height:min(700px,calc(100dvh - 150px))!important;border-radius:22px!important;border:1px solid var(--hair)!important;background:rgba(252,249,242,.92)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 40px 90px -30px rgba(20,40,32,.55)!important;animation:fxChatIn .35s cubic-bezier(.2,.8,.2,1);transition:width .3s,height .3s}
+.chat-panel.wide{width:min(720px,calc(100vw - 24px))!important;height:min(820px,calc(100dvh - 130px))!important}
+@keyframes fxChatIn{from{opacity:0;translate:0 18px;scale:.96}to{opacity:1;translate:0 0;scale:1}}
+.chat-header{background:linear-gradient(135deg,var(--deep),color-mix(in srgb,var(--deep) 62%,var(--accent)))!important;position:relative;overflow:hidden}
+.chat-header::after{content:'';position:absolute;inset:-40% -10% auto auto;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,226,170,.28),transparent 65%);pointer-events:none}
+.chat-avatar{border-radius:50%!important;width:44px!important;height:44px!important;background:rgba(255,255,255,.1);animation:fxPulseAvatar 4s ease-in-out infinite;position:relative}
+@keyframes fxPulseAvatar{50%{box-shadow:0 0 0 7px rgba(255,255,255,.07)}}
+.chat-header h2{font-size:15px!important}
+.chat-header small{font-size:10px!important}
+.chat-tools{display:flex;gap:4px;margin-inline-start:auto}
+.chat-tools button{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;color:#fff4df;transition:background .2s}
+.chat-tools button:hover{background:rgba(255,255,255,.16)}
+.chat-header>button{margin-inline-start:0!important}
+.chat-context{background:rgba(var(--fx-spot),.12)!important;font-size:11px!important}
+.chat-context select{font-size:11px!important;border-radius:999px!important;max-width:130px!important}
+.chat-messages{padding:18px!important;scroll-behavior:smooth;display:flex;flex-direction:column;gap:2px}
+
+/* welcome + suggestion cards */
+.chat-welcome-photo{width:128px!important;height:104px!important;border-radius:60px 60px 16px 16px!important;animation:fxFloat 7s ease-in-out infinite}
+.chat-welcome h3{font-size:17px!important}
+.chat-welcome p{font-size:12px!important}
+.chat-suggest{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.chat-suggest button{display:flex;flex-direction:column;align-items:flex-start;gap:7px;text-align:start;padding:12px;border-radius:14px;background:#fffaf0;border:1px solid var(--hair);font-size:11.5px;line-height:1.6;color:var(--deep);transition:transform .2s,box-shadow .25s,border-color .25s;animation:fxRise .5s backwards}
+.chat-suggest button:nth-child(2){animation-delay:.05s}.chat-suggest button:nth-child(3){animation-delay:.1s}.chat-suggest button:nth-child(4){animation-delay:.15s}.chat-suggest button:nth-child(5){animation-delay:.2s}.chat-suggest button:nth-child(6){animation-delay:.25s}
+.chat-suggest button:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 14px 26px -18px rgba(var(--fx-line),.8)}
+.chat-suggest svg{color:var(--accent)}
+
+/* bubbles */
+.chat-message{font-size:13px!important;line-height:1.95!important;border-radius:18px!important;padding:12px 15px!important;max-width:92%;width:fit-content;white-space:normal!important;animation:fxBubble .35s cubic-bezier(.2,.8,.2,1) backwards;position:relative;margin-bottom:10px!important}
+@keyframes fxBubble{from{opacity:0;translate:0 10px;scale:.97}}
+.chat-message.user{margin-inline-start:auto!important;background:linear-gradient(135deg,var(--deep),color-mix(in srgb,var(--deep) 70%,var(--accent)))!important;border-end-end-radius:5px!important}
+.chat-message.assistant{margin-inline-end:auto!important;background:#fffaf0!important;border:1px solid var(--hair);border-end-start-radius:5px!important;box-shadow:0 10px 24px -20px rgba(var(--fx-line),.6)}
+.chat-message small{font-size:9.5px!important;display:flex!important;align-items:center;gap:6px}
+.chat-message small::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent2)}
+.chat-message p{margin:0 0 6px}.chat-message p:last-of-type{margin-bottom:0}
+.chat-message ul{margin:6px 0;padding-inline-start:20px}.chat-message li{margin:3px 0}
+.chat-message strong{color:var(--accent)}
+.chat-message.user strong{color:#ffe7b0}
+.chat-copy{position:absolute;inset-inline-end:8px;top:8px;opacity:0;transition:opacity .2s;font-size:10px;padding:3px 8px;border-radius:99px;background:rgba(var(--fx-line),.08);color:var(--deep)}
+.chat-message:hover .chat-copy,.chat-copy:focus-visible{opacity:1}
+.chat-answer-sources a{border-radius:99px!important;padding:3px 10px!important}
+
+/* typing dots */
+.chat-typing{display:flex;gap:5px;align-items:center;width:fit-content;padding:13px 16px;border-radius:18px;border-end-start-radius:5px;background:#fffaf0;border:1px solid var(--hair);margin-bottom:10px}
+.chat-typing i{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:fxDot 1.2s infinite ease-in-out}
+.chat-typing i:nth-child(2){animation-delay:.15s}.chat-typing i:nth-child(3){animation-delay:.3s}
+@keyframes fxDot{0%,60%,100%{translate:0 0;opacity:.35}30%{translate:0 -6px;opacity:1}}
+.chat-caret::after{content:'▍';color:var(--accent);animation:fxBlink 1s steps(1) infinite;margin-inline-start:2px}
+@keyframes fxBlink{50%{opacity:0}}
+
+/* quick chips + input */
+.chat-quick{background:transparent!important;border-top:1px solid var(--hair)!important;padding:10px 14px 4px!important}
+.chat-quick>small{font-size:10px!important}
+.chat-quick button{font-size:10.5px!important;padding:7px 12px!important;border-radius:999px!important;transition:transform .2s,border-color .2s}
+.chat-quick button:hover{transform:translateY(-2px);border-color:var(--accent)!important}
+.chat-input{background:transparent!important;border-top:0!important;padding:10px 14px 14px!important}
+.chat-input input{background:#fffaf0!important;border:1px solid var(--hair)!important;border-radius:999px!important;padding:0 16px!important;height:44px;font-size:13px!important;transition:box-shadow .25s,border-color .25s}
+.chat-input input:focus{border-color:var(--accent)!important;box-shadow:0 0 0 4px rgba(var(--fx-spot),.25)}
+.chat-input button{min-width:44px!important;height:44px!important;background:linear-gradient(135deg,var(--deep),var(--accent))!important;transition:transform .2s}
+.chat-input button:not(:disabled):hover{transform:scale(1.08) rotate(-8deg)}
+.chat-error{border-radius:14px!important}
+@media(max-width:760px){.chat-panel,.chat-panel.wide{width:calc(100vw - 16px)!important;inset-inline-end:8px!important;height:calc(100dvh - 96px)!important}.chat-suggest{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.chat-panel,.chat-message,.chat-suggest button,.chat-welcome-photo,.chat-launcher i{animation:none}.chat-typing i{animation:none;opacity:.7}}
+
+.chat-launcher{z-index:10000!important}
+
+/* ---------- Language switch: obvious, immediate, never half-translated ---------- */
+.fan-translation-status{position:fixed!important;top:86px!important;bottom:auto!important;left:50%!important;right:auto!important;inset-inline-end:auto!important;translate:-50% 0;z-index:10002!important;display:flex;align-items:center;gap:12px;padding:12px 20px!important;border-radius:999px!important;background:var(--deep)!important;color:#fff!important;font-size:13px!important;font-weight:600;box-shadow:0 20px 44px -16px rgba(var(--fx-line),.9)!important;animation:fxRise .3s}
+.fan-translation-status::before{content:'';width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .8s linear infinite}
+.fan-translation-status button{color:#fff;font-size:16px;padding:0 4px}
+html[data-translating] .app>*:not(header){filter:blur(2.5px) saturate(.7);opacity:.55;pointer-events:none;transition:filter .3s,opacity .3s}
+.app>*{transition:filter .4s,opacity .4s}
+
+.chat-followups{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px}
+.chat-followups button{font-size:11px;padding:6px 12px;border-radius:999px;background:transparent;border:1px dashed var(--accent);color:var(--accent);transition:background .2s,color .2s,transform .2s;animation:fxRise .4s backwards}
+.chat-followups button:hover{background:var(--accent);color:#fff;transform:translateY(-2px)}

@@ -1,0 +1,1 @@
+export function knownLanguage(value:string){try{const tag=Intl.getCanonicalLocales(value)[0];const name=new Intl.DisplayNames(['en'],{type:'language',fallback:'none'}).of(tag);return !!name&&name!==tag;}catch{return false;}}
