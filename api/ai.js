@@ -31,28 +31,6 @@ async function callGroq(key, model, messages) {
   return { status: r.status, ok: r.ok && typeof text === "string" && text.trim() !== "", text, error: j && j.error && j.error.message };
 }
 
-// Keyless fallback so the site works before a Groq key is added (shared free tier, rate limited).
-const FREE = [
-  { url: "https://text.pollinations.ai/openai", model: "openai" },
-  { url: "https://gen.pollinations.ai/v1/chat/completions", model: "openai" },
-];
-async function callFree(messages) {
-  let last = null;
-  for (let attempt = 0; attempt < 2; attempt++) {
-    for (const p of FREE) {
-      try {
-        const r = await fetch(p.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: p.model, messages, private: true, referrer: "asia27-fanverse" }) });
-        const raw = await r.text(); let j = null; try { j = JSON.parse(raw); } catch {}
-        const text = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
-        if (r.ok && typeof text === "string" && text.trim()) return { ok: true, text, model: "pollinations:" + p.model };
-        last = { status: r.status, error: (j && j.error && (j.error.message || j.error)) || raw.slice(0, 200) };
-      } catch (e) { last = { status: 0, error: "Free provider unreachable" }; }
-    }
-    await new Promise(r => setTimeout(r, 3000));
-  }
-  return Object.assign({ ok: false }, last);
-}
-
 export const config = { maxDuration: 60 };
 
 export default async function handler(req, res) {
@@ -68,11 +46,8 @@ export default async function handler(req, res) {
     messages.every(m => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.length <= 12000);
   if (!valid) return res.status(400).json({ error: "Invalid messages payload" });
 
-  if (!key) {
-    const f = await callFree(messages);
-    if (f.ok) return res.status(200).json({ text: f.text, provider: "free", model: f.model });
-    return res.status(f.status === 429 ? 429 : 502).json({ error: String(f.error || "Free provider error") });
-  }
+  // No key: tell the browser to use the keyless free tier directly (per-visitor quota).
+  if (!key) return res.status(503).json({ noKey: true, error: "GROQ_API_KEY is not configured" });
   let last = null;
   for (const model of MODELS) {
     try {

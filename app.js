@@ -88,15 +88,39 @@
   }
   // Outside claude.ai (e.g. a Vercel deploy) the same prompts go to a server route that holds the
   // provider key (see api/ai.js). Keys never reach the browser.
+  // No server key configured -> each visitor's browser calls the keyless free tier directly,
+  // so every visitor gets their own quota (about 1 reply / 45 s per IP). We space calls and retry.
+  let FREE_MODE = false, freeNext = 0;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  async function freeAI(messages) {
+    const msgs = [{ role: "system", content: `You are the AI inside an unofficial football fan app. Always write in ${meta().ai}.` }].concat(messages);
+    for (let i = 0; i < 4; i++) {
+      const gap = freeNext - Date.now();
+      if (gap > 0) { toast(t("ai.wait", { s: Math.ceil(gap / 1000) }), gap); await sleep(gap); }
+      let r, raw = "";
+      try {
+        r = await fetch("https://text.pollinations.ai/openai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "openai", messages: msgs, private: true, referrer: "asia27-fanverse" }) });
+        raw = await r.text();
+      } catch (e) { throw { code: "unavailable" }; }
+      let j = null; try { j = JSON.parse(raw); } catch (e) {}
+      const txt = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      if (r.ok && typeof txt === "string" && txt.trim()) { freeNext = Date.now() + 46000; return txt; }
+      if (r.status === 402 || r.status === 429) { const m = /(?:after|wait)\s+(\d+)/i.exec(raw); freeNext = Date.now() + ((m ? +m[1] : 45) + 2) * 1000; continue; }
+      throw { code: "fail", message: "HTTP " + r.status };
+    }
+    throw { code: "rate_limited" };
+  }
   async function serverAI(input) {
+    const messages = typeof input === "string" ? [{ role: "user", content: input }] : input;
+    if (FREE_MODE) return freeAI(messages);
     let res;
     try {
-      const messages = typeof input === "string" ? [{ role: "user", content: input }] : input;
       res = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages }) });
     } catch (e) { throw { code: "unavailable" }; }
     if (res.status === 404) throw { code: "unavailable" };
     if (res.status === 429) throw { code: "rate_limited" };
     const j = await res.json().catch(() => null);
+    if (res.status === 503 && j && j.noKey) { FREE_MODE = true; return freeAI(messages); }
     if (!res.ok || !j || typeof j.text !== "string") throw { code: "fail", message: (j && j.error) || "HTTP " + res.status };
     return j.text;
   }
@@ -132,7 +156,7 @@
   }
   async function aiJSON(prompt, opts = {}) {
     let json = parseJSON(await rawAI(withLang(prompt), opts));
-    if (json && !langOK(textValues(json).join(" "))) {
+    if (json && !FREE_MODE && !langOK(textValues(json).join(" "))) {
       try {
         const fixed = parseJSON(await rawAI(`Translate every human-readable string value in this JSON into ${meta().ai}. Keep the same keys, structure, numbers, times and ids. Keep any "maps" values in English. Return JSON only.\n${JSON.stringify(json)}`, opts));
         if (fixed && langOK(textValues(fixed).join(" "))) json = fixed;
@@ -147,7 +171,7 @@
     let txt;
     if (!s) { txt = await serverAI(input); if (onText) onText(txt); }
     else { const r = await s(input, Object.assign({ cache: false, onText: onText ? (u => onText(u.text)) : undefined }, opts)); txt = (r && r.text) || ""; }
-    if (guard && txt && !langOK(txt)) {
+    if (guard && !FREE_MODE && txt && !langOK(txt)) {
       try { const fx = await rawAI(`Translate this text into ${meta().ai}. Keep formatting, numbers and any Arabic phrase that is being taught (with its meaning). Return only the translation.\n\n${txt}`, opts); if (fx && langOK(fx)) { txt = fx; if (onText) onText(txt); } } catch (e) {}
     }
     return txt;
@@ -164,10 +188,10 @@
     S.badges.push(id); save(); toast(t("toast.badge", { b: t("b." + id) }));
   }
   let toastTimer;
-  function toast(msg) {
+  function toast(msg, ms) {
     $(".toast") && $(".toast").remove();
     const el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); el.textContent = msg;
-    document.body.appendChild(el); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.remove(), 2800);
+    document.body.appendChild(el); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.remove(), ms || 2800);
   }
 
   /* ---------------- Graphics ---------------- */
