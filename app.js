@@ -99,7 +99,7 @@
       if (gap > 0) { toast(t("ai.wait", { s: Math.ceil(gap / 1000) }), gap); await sleep(gap); }
       let r, raw = "";
       try {
-        r = await fetch("https://text.pollinations.ai/openai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "openai", messages: msgs, private: true, referrer: "asia27-fanverse" }) });
+        r = await fetch("https://text.pollinations.ai/openai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "openai", messages: msgs, reasoning_effort: "low", private: true, referrer: "asia27-fanverse" }) });
         raw = await r.text();
       } catch (e) { throw { code: "unavailable" }; }
       let j = null; try { j = JSON.parse(raw); } catch (e) {}
