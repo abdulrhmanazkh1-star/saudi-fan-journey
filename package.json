@@ -1,0 +1,6 @@
+{
+  "name": "asia27-fanverse",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" }
+}
