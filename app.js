@@ -238,7 +238,8 @@
   }
   const BRAND_SVG = emblemSVG("brand-mark", true);
   const PH = window.FV_PHOTOS, GAL = window.FV_GALLERY;
-  const imgTag = (k, cls = "", eager) => `<img src="img/${k}.jpg" alt="" ${eager ? "" : 'loading="lazy"'} decoding="async" class="${cls}">`;
+  const ASSET = window.FV_ASSETS || "";
+  const imgTag = (k, cls = "", eager) => `<img src="${ASSET}img/${k}.jpg" alt="" ${eager ? "" : 'loading="lazy"'} decoding="async" class="${cls}">`;
   const creditLine = (k, link = true) => { const p = PH[k]; if (!p) return ""; if (p.user || p.free) return p.render ? `<span class="credit">${t("s.render")}</span>` : p.illus ? `<span class="credit">${t("s.illus")}</span>` : ""; const by = link ? `<a href="${p.src}" target="_blank" rel="noopener">${esc(p.by)}</a>` : esc(p.by); return `<span class="credit">© ${by} · ${p.lic}</span>`; };
   function fadeStack(keys, dur) { const D_ = dur || keys.length * 5; return `<div class="fade" style="--dur:${D_}s">${keys.map((k, i) => imgTag(k, "", i === 0).replace("<img ", `<img style="animation-delay:${i ? (i - 1) * D_ / Math.max(1, keys.length - 1) + D_ * 0.3 : 0}s" `)).join("")}</div>`; }
 
@@ -1210,7 +1211,7 @@ Clearly distinguish planned from completed; never claim they visited anything no
   }
   function openLightbox(k) {
     const el = document.createElement("div"); el.className = "lightbox"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true");
-    el.innerHTML = `<button class="btn btn-ghost btn-sm lb-close" data-lb-close>${t("close")}</button><figure><img src="img/${k}.jpg" alt=""><figcaption>${creditLine(k)}</figcaption></figure>`;
+    el.innerHTML = `<button class="btn btn-ghost btn-sm lb-close" data-lb-close>${t("close")}</button><figure><img src="${ASSET}img/${k}.jpg" alt=""><figcaption>${creditLine(k)}</figcaption></figure>`;
     el.addEventListener("click", e => { if (e.target === el) el.remove(); });
     document.body.appendChild(el); $(".lb-close", el).focus();
   }
